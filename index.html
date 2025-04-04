@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title style="color:black;">BOOK MANAGEMENT PROJECT</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./style.css">
+    <script src="./index.js"></script>
+</head>
+<body>
+    <h2 class="tex-center" style="text-align: center; font-weight: bold;padding: 5px;font-size: 50px;">
+        <img src="./images/5402751.png" alt="book-image" style="height: 60px;width: auto;" >
+        BOOK MANAGEMENT SYSTEM
+    </h2>
+
+    <div class="mine-form tex-center">
+        <form action="/search" method="get">
+            <input type="text"name="search"placeholder="search from here" class="search-input">
+            <button type="submit" class="seach-bar"> search</button>
+        </form>
+    </div>
+
+       <div class="side-bar">
+        <p class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#favorites"><img src="./images/9211782.png" alt="books" style="height: 60px;width: auto;">  All Books</p>
+        <p><img src="./images/vecteezy_heart-emoji-png-file_18824823.png" alt="blue heart" style="height: 60px;width: auto;"> Favorites</p>
+        <p><img src="./images/8896509.png" alt="read" style="height: 60px;width: auto;">  Read</p>
+        <p><img src="./images/2991983-middle-removebg-preview (1).png" alt="not-fav" style="height: 60px;width: auto;">Unread</p>
+       </div>
+
+        <header class="header-add tex-center mb-3">
+           <div class="dropdown mt-3" style="margin-left: 300px;">
+            <button class="btn btn-info dropdown-toggle" type="button"  id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" style="margin-left: 250px;">
+                + Add Book</button>
+            <ul class="dropdown-menu p-3" aria-labelledby="dropdownMenuButton">
+                <li>
+                    <label for="bookCover" class="form-label">Upload Book Cover</label>
+                    <input type="file" class="form-control" id="bookCover">
+                </li>
+                <li>
+                    <label for="bookTitle" class="form-label mt-2">Title</label>
+                    <input type="text" class="form-control" id="bookTitle" placeholder="Enter book title">
+                </li>
+                <li>
+                    <label for="bookGenre" class="form-label mt-2">Genre</label>
+                    <input type="text" class="form-control" id="bookGenre" placeholder="Enter the book Genre">
+                </li>
+                <li>
+                    <label for="bookAuthor" class="form-label mt-2">Author</label>
+                    <input type="text" class="form-control" id="bookAuthor" placeholder="Enter book author">
+                </li>
+                <li>
+                    <label for="bookStatus" class="form-label m-2">Status</label>
+                    <select class="form-control" id="bookStatus">
+                        <option value="Read">Read</option>
+                        <option value="Unread">Unread</option>
+                    </select>
+                </li>
+                <li class="text-center mt-3">
+                    <button class="btn btn-primary" onclick="saveBook()">Save</button>
+                </li>
+             </ul>
+
+            
+           </div>
+        </header>
+
+        <section class="container d-flex flex-wrap justify-content-center" id="bookList" style="margin-left: 500px;"></section>
+        
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>   
+        <script>
+            let books = JSON.parse(localStorage.getItem("books")) || [];
+
+            function saveBook() {
+                let title = document.getElementById('bookTitle').value;
+                let genre = document.getElementById('bookGenre').value;
+                let author = document.getElementById('bookAuthor').value;
+                let status = document.getElementById('bookStatus').value;
+                let cover = document.getElementById('bookCover').files[0];
+
+                if (!title || !genre || !author || !coverInput){
+                    alert("please fill in all fields then upload a book cover.");
+                    return;
+                }
+
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let book ={
+                        title:title,
+                        genre:genre,
+                        author:author,
+                        status:status,
+                        cover:e.target.result
+                    };
+                    books.push(book);
+                    localStorage.setItem("books",JSON.stringify(books));
+                    displayBooks();
+                };
+                reader.readAsDataURL(coverInput);
+            }
+            function displayBooks(){
+                let bookList = document.getElementById('bookList');
+                bookList.innerHTML ="";
+                books.forEach((book, index) => {
+            let bookItem = document.createElement('div');
+            bookItem.classList.add('card', 'p-3', 'm-3', 'tex-center', 'shadow-sm', 'book-item');
+            bookItem.innerHTML = `
+                <img src="${book.cover}" alt="Book Cover" class="card-img-top" style="height:250px; width: auto; object-fit: cover; margin-bottom:10px;">
+                <div class="card-body">
+                    <h5 class="card-title">${book.title}</h5>
+                    <p class="card-text"><strong>Author:</strong> ${book.author}</p>
+                    <p class="card-text"><strong>Genre:</strong> ${book.genre}</p>
+                    <p class="card-text"><strong>Status:</strong> ${book.status}</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <button class="btn btn-danger btn-sm" onclick="deleteBook(${index})">Delete</button>
+                        <button class="btn btn-success btn-sm favorite-btn" onclick="toggleFavorite(this)">Favorite</button>
+                    </div>
+                </div>
+            `;
+            bookList.appendChild(bookItem);
+        });
+    }
+
+    function deleteBook(index) {
+        books.splice(index, 1);
+        localStorage.setItem("books", JSON.stringify(books));
+        displayBooks();
+    }
+
+    function toggleFavorite(button) {
+        if (button.innerText === "Favorite") {
+            button.innerText = "Unfavorite";
+            button.classList.replace("btn-success", "btn-secondary");
+        } else {
+            button.innerText = "Favorite";
+            button.classList.replace("btn-secondary", "btn-success");
+        }
+    }
+
+    // Load books from localStorage when page loads
+    window.onload = displayBooks;
+            //     books.forEach((book, index)=> {
+            //         let bookItem = document.createElement('div');
+            //         bookItem.classList.add('card','p-3','m-3','text-center', 'shadow-sm','book-item')
+            //         bookItem.innerHTML = `
+            //         <img src="${book.cover}" alt="Book Cover" class="card-img-top" style="height:250px; width: auto; object-fit: cover; margin-bottom:10px;">
+            //         <div class="card-body">
+            //             <h5 class="card-title">${title}</h5>
+            //             <p class="card-text"><strong>Author:</strong>${author}</p>
+            //             <p class="card-text"><strong>Genre:</strong>${genre}</p>
+            //             <p class="card-text"><strong>Status:</strong>${status}</p>
+            //             <div class="d-flex justify-content-center gap-2">
+            //                 <button class="btn btn-warning btn-sm" onclick="editBook(this)">Edit</button>
+            //                 <button class="btn btn-danger btn-sm" onclick="deleteBook(this)">Delete</button>
+            //                 <button class="btn btn-success btn-sm favorite-btn" onclick="toggleFavorite(this)">Favorite</button>
+                         
+            //             </div>
+                     
+            //         </div>
+                    
+            //         `;
+            //         bookList.appendChild(bookItem);
+            //     };
+            //     }
+            // };
+            // function deleteBook(button){
+            //     button.closest('.card').remove();
+            // }
+            // function editBook(button){
+            //     alert("Editing feature to be implemented.");
+            // }
+            // function toggleFavorite(button){
+            //     if (button.innerText === "Favorite"){
+            //         button.innerText = "Unfavorite";
+            //         button.classList.replace("btn-success","btn-secondary");
+            //     } else{
+            //         button.innerText = "Favorite";
+            //         button.classList.replace("btn-secondary", "btn-success");
+            //     }
+            // }
+            // window.load = displayBooks;
+
+        </script>
+</body>
+</html>
